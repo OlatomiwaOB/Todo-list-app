@@ -1,6 +1,8 @@
-# To-Do List App
+<<<<<<< HEAD
 
-A modern, responsive To-Do List application built with React and vite. And Easily add, edit, search, filter, and manage your tasks with a UI and fast performance.
+# Todo List App
+
+This is a React-based to-do list application with filtering, searching, and pagination.
 
 ## All Features
 
@@ -70,3 +72,9 @@ public/
   vite.svg          # Vite logo
 index.html          # HTML template
 ```
+
+=======
+
+# Todo-list-App
+
+> > > > > > > 111f6d159fe7c5b7e9be5193f4c8d76610132223
