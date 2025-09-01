@@ -1,25 +1,30 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import ErrorBoundary from "./ErrorBoundary.jsx";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Link } from "react-router-dom";
+import ErrorBoundary from "./ErrorBoundary";
+import { Routes, Route} from "react-router-dom"
 import "./App.css";
 import { FaTrash, FaSearch } from "react-icons/fa";
-const fetchTodos = async () => {
+type Todo = {
+  userId: number;
+  id: number;
+  title: string;
+  completed: boolean;
+}
+const fetchTodos = async (): Promise<Todo[]> => {
   const res = await axios.get("https://jsonplaceholder.typicode.com/todos");
   return res.data;
 };
 
-const addTodo = async (newTode) => {
+const addTodo = async (newTodo: Todo): Promise<Todo> => {
   const res = await axios.post(
     "https://jsonplaceholder.typicode.com/todos",
-    newTode
+    newTodo
   );
   return res.data;
 };
 // Error component
-function CrashComponent() {
+function CrashComponent(): never {
   throw new Error("Test error for ErrorBoundary!");
 }
 
@@ -47,32 +52,32 @@ function NotFound() {
 
 function MainApp() {
   const queryClient = useQueryClient();
-  const [text, setText] = useState("");
-  const [page, setPage] = useState(1);
-  const [selectedTodo, setSelectedTodo] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editTitle, setEditTitle] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [crash, setCrash] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const [text, setText] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editTitle, setEditTitle] = useState<string>("");
+  const [filter, setFilter] = useState<"all" | "completed" | "pending">("all");
+  const [crash, setCrash] = useState<boolean>(false);
+  const [searchInput, setSearchInput] = useState<string>("");
+  const [search, setSearch] = useState<string>("");
 
   // Handler for clicking a Todo
-  const handleTodoClick = (todo) => {
+  const handleTodoClick = (todo: Todo) => {
     setSelectedTodo(todo);
     setShowModal(true);
   };
 
-  const handleToggle = (todoId) => {
-    queryClient.setQueryData(["todos"], (olaData = []) =>
+  const handleToggle = (todoId: number) => {
+    queryClient.setQueryData<Todo[]>(["todos"], (olaData = []) =>
       olaData.map((todo) =>
         todo.id === todoId ? { ...todo, completed: !todo.completed } : todo
       )
     );
   };
 
-  const { data: todos = [], isLoading } = useQuery({
+  const { data: todos = [], isLoading } = useQuery<Todo[]>({
     queryKey: ["todos"],
     queryFn: fetchTodos,
   });
@@ -86,7 +91,7 @@ function MainApp() {
       title: text,
       completed: false,
     };
-    queryClient.setQueryData(["todos"], (oldData = []) => [
+    queryClient.setQueryData<Todo[]>(["todos"], (oldData = []) => [
       ...oldData,
       newTodo,
     ]);
@@ -95,6 +100,7 @@ function MainApp() {
 
   // Edit and Delete Handlers
   const handleEdit = () => {
+    if (!selectedTodo) return;
     setIsEditing(true);
     setEditTitle(selectedTodo.title);
   };
@@ -105,7 +111,8 @@ function MainApp() {
   };
 
   const handleSave = () => {
-    queryClient.setQueryData(["todos"], (olaData = []) =>
+     if (!selectedTodo) return;
+    queryClient.setQueryData<Todo[]>(["todos"], (olaData = []) =>
       olaData.map((todo) =>
         todo.id === selectedTodo.id ? { ...todo, title: editTitle } : todo
       )
@@ -114,8 +121,8 @@ function MainApp() {
     setIsEditing(false);
   };
 
-  const handleDelete = (todoId) => {
-    queryClient.setQueryData(["todos"], (oldData) =>
+  const handleDelete = (todoId: number) => {
+    queryClient.setQueryData<Todo[]>(["todos"], (oldData = []) =>
       oldData.filter((todo) => todo.id !== todoId)
     );
     setShowModal(false);
